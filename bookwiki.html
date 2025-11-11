@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>book – library & games</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Stack+Sans+Text:wght@600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#0d0d0d;--surface:#1a1a1a;--text:#f0f0f0;--text-muted:#aaa;
+  --accent:#00ff9d;--accent-hover:#00cc7a;--border:#333;
+  --radius:16px;--shadow:0 8px 32px rgba(0,0,0,.3);
+  --font-body:'Inter',sans-serif;--font-bold:'Stack Sans Text',sans-serif;
+  --transition: all .5s cubic-bezier(.25,.46,.45,.94); 
+  --text-contrast: var(--text); 
+}
+[data-theme="purple"]{--accent:#9d00ff;--accent-hover:#7a00cc;}
+[data-theme="blue"]{--accent:#00aaff;--accent-hover:#0088cc;}
+[data-theme="coral"]{--accent:#ff6b6b;--accent-hover:#ff5252;}
+[data-theme="mint"]{--accent:#4ade80;--accent-hover:#22c55e;}
+[data-theme="oled"]{--bg:#000;--surface:#111;--text:#eee;}
+[data-theme="paper"]{--bg:#f9f9f9;--surface:#fff;--text:#1a1a1a;--text-muted:#555;--border:#e0e0e0;--text-contrast:#000;}
+[data-theme="sepia"]{--bg:#f4e9d8;--surface:#fdf6e3;--text:#5c4033;--text-muted:#8b6f47;--border:#d4c4a8;--text-contrast:#000;}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:clamp(14px,2.5vw,16px);}
+body{
+  font-family:var(--font-body);background:var(--bg);color:var(--text-contrast);
+  line-height:1.7;transition:var(--transition);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+body.theme-ripple::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle, var(--accent) 0%, transparent 70%);opacity:.3;z-index:999;animation:ripple-out .6s ease-out forwards;pointer-events:none;}
+@keyframes ripple-out{to{opacity:0;transform:scale(2);}}
+
+[data-theme="paper"],[data-theme="sepia"]{color:var(--text-contrast);}
+
+#header{
+  position:sticky;top:0;z-index:100;background:var(--surface);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  padding:1rem;display:flex;align-items:center;gap:1rem;
+  font-family:var(--font-bold);
+}
+#logo{
+  font-size:clamp(1.6rem,4vw,2rem);font-weight:700;color:var(--text-contrast);
+  background:linear-gradient(135deg,var(--accent),var(--accent-hover));
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:gradShift 6s ease infinite;
+}
+@keyframes gradShift{
+  0%,100%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+}
+#search{flex:1;max-width:500px;}
+#search input{
+  width:100%;padding:.75rem 1rem;background:var(--bg);color:var(--text-contrast);
+  border:1.5px solid var(--border);border-radius:50px;font-size:1rem;
+  transition:var(--transition);
+}
+#search input:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent);
+}
+
+.icon-btn{
+  background:transparent;border:none;color:var(--text-muted);
+  font-size:1.4rem;cursor:pointer;padding:.5rem;
+  border-radius:12px;transition:var(--transition);
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover{color:var(--text-contrast);background:color-mix(in srgb,var(--accent) 10%,transparent);}
+.icon-btn.active{color:var(--accent);}
+
+#main{display:flex;min-height:calc(100vh - 73px);}
+#sidebar{
+  width:280px;background:var(--surface);border-right:1px solid var(--border);
+  padding:1.5rem;overflow-y:auto;transition:transform .3s ease;
+}
+@media(max-width:768px){
+  #sidebar{position:fixed;left:0;top:73px;height:calc(100vh - 73px);
+    transform:translateX(-100%);z-index:50;}
+  #sidebar.open{transform:translateX(0);}
+}
+#sidebar h3{
+  font-family:var(--font-bold);color:var(--accent);margin:1.5rem 0 .8rem;
+  font-size:1.3rem;display:flex;align-items:center;gap:.5rem;
+}
+#results{list-style:none;}
+#results li{margin:.5rem 0;}
+#results a{
+  display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;
+  border-radius:12px;color:var(--text-muted);text-decoration:none;
+  transition:var(--transition);
+}
+#results a:hover{background:color-mix(in srgb,var(--accent) 10%,transparent);color:var(--text-contrast);}
+#content{flex:1;padding:2rem;max-width:800px;margin:0 auto;width:100%;}
+
+.card{
+  background:var(--surface);border-radius:var(--radius);padding:2rem;
+  margin-bottom:1.5rem;border:1px solid var(--border);box-shadow:var(--shadow);
+  color:var(--text-contrast);
+}
+.card h1{
+  font-family:var(--font-bold);font-size:2.2rem;margin-bottom:1rem;color:var(--text-contrast);
+  background:linear-gradient(135deg,var(--accent),var(--accent-hover));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.book-card{
+  display:flex;gap:1rem;align-items:center;padding:1rem;
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--border);transition:var(--transition);
+}
+.book-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.2);}
+.book-cover{width:60px;height:90px;object-fit:cover;border-radius:6px;}
+.book-info h4{margin:0;font-size:1.1rem;font-weight:600;color:var(--text-contrast);}
+.book-info p{margin:0;font-size:.9rem;color:var(--text-muted);}
+.share-btn{background:var(--accent);color:#000;padding:.4rem .8rem;border:none;border-radius:8px;font-size:.9rem;cursor:pointer;transition:var(--transition);}
+.share-btn:hover{background:var(--accent-hover);transform:scale(1.05);}
+
+.game-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-radius:12px;
+  background:var(--surface);border:1px solid var(--border);
+  margin-bottom:.8rem;transition:var(--transition);color:var(--text-contrast);
+}
+.game-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15);}
+.game-item .title{font-weight:600;display:flex;align-items:center;gap:.5rem;}
+.game-item .play-btn{
+  background:var(--accent);color:#000;padding:.4rem .8rem;
+  border:none;border-radius:10px;font-weight:600;cursor:pointer;
+  transition:var(--transition);
+}
+.game-item .play-btn:hover{background:var(--accent-hover);transform:scale(1.05);}
+
+
+#gameArea{margin-top:2rem;display:none;}
+.game-board{
+  display:grid;gap:8px;max-width:400px;margin:1.5rem auto;
+  background:var(--surface);padding:1.5rem;border-radius:var(--radius);
+  border:1px solid var(--border);
+}
+.tic-cell{
+  width:80px;height:80px;background:var(--bg);border:none;border-radius:8px;
+  font-size:2.5rem;cursor:pointer;transition:var(--transition);color:var(--text-contrast);
+}
+.tic-cell:hover{background:var(--border);}
+.tic-cell.winner{animation:pulse 1s infinite;background:var(--accent)!important;color:#000;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+.chess-board{
+  display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-width:400px;margin:1.5rem auto;
+  width:100%;
+}
+.chess-cell{
+  aspect-ratio:1;border-radius:4px;cursor:pointer;position:relative;
+  transition:var(--transition);display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1.2rem,3vw,1.8rem);
+}
+.chess-cell.light{background:#f0d9b5;}
+.chess-cell.dark{background:#b58863;}
+.chess-cell:hover{transform:scale(1.05);}
+.chess-cell.selected{box-shadow:0 0 0 3px var(--accent);}
+.game-status{
+  text-align:center;margin:1rem 0;font-weight:600;color:var(--accent);
+}
+.game-btns{
+  display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;
+}
+.game-btn{
+  min-width:120px;padding:.75rem;background:var(--accent);color:#000;
+  border:none;border-radius:12px;font-weight:600;cursor:pointer;
+  transition:var(--transition);
+}
+.game-btn:hover{background:var(--accent-hover);transform:translateY(-2px);}
+
+#themePanel{
+  position:fixed;bottom:1rem;right:1rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem;width:300px;box-shadow:var(--shadow);z-index:100;
+  display:none;animation:slideUp .3s ease;color:var(--text-contrast);
+}
+#themePanel.open{display:block;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:none;opacity:1;}}
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin:1rem 0;}
+.theme-btn{height:40px;border-radius:12px;border:none;cursor:pointer;transition:var(--transition);}
+.theme-btn:hover{transform:scale(1.1);}
+.theme-btn.active{box-shadow:0 0 0 3px var(--text-contrast);}
+
+@media(max-width:768px){
+  #header{gap:.5rem;}
+  #search{max-width:300px;}
+  .tic-cell{width:60px;height:60px;font-size:2rem;}
+  .chess-board{max-width:300px;}
+  .chess-cell{font-size:1.4rem;}
+}
+@media(max-width:480px){
+  #header{padding:.75rem;}
+  #logo{font-size:1.5rem;}
+  #search{flex:1;max-width:none;}
+  #content{padding:1rem;}
+  .card{padding:1.5rem;}
+  .game-board{padding:1rem;}
+  .tic-cell{width:50px;height:50px;font-size:1.8rem;}
+  .chess-board{max-width:100%;gap:1px;}
+  .chess-cell{font-size:1.2rem;}
+}
+</style>
+</head>
+
+<body>
+<div id="header">
+  <div id="logo">book</div>
+  <div id="search"><input type="text" id="searchInput" placeholder="Search books…"></div>
+  <button class="icon-btn theme-toggle" aria-label="Change theme">🎨</button>
+  <button class="icon-btn night-toggle" aria-label="Toggle light/dark">🌙</button>
+  <button class="icon-btn menu-toggle" aria-label="Open menu">☰</button>
+</div>
+
+<div id="themePanel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+    <strong style="font-family:var(--font-bold);">Themes</strong>
+    <button class="icon-btn" onclick="this.parentElement.parentElement.classList.remove('open')">✕</button>
+  </div>
+  <div class="theme-grid">
+    <button class="theme-btn" style="background:#00ff9d" data-theme="" title="Nerd Green"></button>
+    <button class="theme-btn" style="background:#9d00ff" data-theme="purple" title="Cyber Purple"></button>
+    <button class="theme-btn" style="background:#00aaff" data-theme="blue" title="Midnight Blue"></button>
+    <button class="theme-btn" style="background:#ff6b6b" data-theme="coral" title="Sunset Coral"></button>
+    <button class="theme-btn" style="background:#4ade80" data-theme="mint" title="Mint Cream"></button>
+    <button class="theme-btn" style="background:#000" data-theme="oled" title="OLED Black"></button>
+    <button class="theme-btn" style="background:#f9f9f9" data-theme="paper" title="Paper White"></button>
+    <button class="theme-btn" style="background:#f4e9d8" data-theme="sepia" title="Sepia Classic"></button>
+  </div>
+  <label style="display:block;margin-top:1rem;">
+    Custom: <input type="color" id="customColor" value="#00ff9d" style="width:100%;height:36px;border:none;border-radius:8px;">
+  </label>
+</div>
+
+<div id="main">
+  <nav id="sidebar">
+    <h3>📚 Library</h3>
+    <button class="add-btn" id="addBtn" style="width:100%;padding:.75rem;background:var(--accent);color:#000;border:none;border-radius:12px;font-weight:600;margin-bottom:1rem;">
+      ➕ Add Book
+    </button>
+    <ul id="results"></ul>
+
+    <h3>🎮 Games</h3>
+    <div id="gamesList">
+      <div class="game-item">
+        <div class="title">⭕ Tic Tac Toe</div>
+        <button class="play-btn" data-game="tic">▶️ Play</button>
+      </div>
+      <div class="game-item">
+        <div class="title">♛ Chess vs Bot</div>
+        <button class="play-btn" data-game="chess">▶️ Play</button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="content">
+    <div class="card">
+      <h1>book</h1>
+      <p>Clean. Scalable. Beautiful. <strong>Finally.</strong></p>
+      <p>📚 Library • 🎮 Games • Share on X • 8 themes • Custom colors</p>
+    </div>
+    <div id="bookList"></div>
+    <div id="gameArea"></div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+const mockBooks = [
+  {title:"The Pragmatic Programmer",author:"Andrew Hunt",cover:"https://images.unsplash.com/photo-1543002588-b1a8643e2353?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Just reading The Pragmatic Programmer by Andrew Hunt! Great tips for coders. #bookwiki"},
+  {title:"Clean Code",author:"Robert C. Martin",cover:"https://images.unsplash.com/photo-1555066931-4365d14babba?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Clean Code by Robert C. Martin is a must-read! #bookwiki"},
+  {title:"You Don't Know JS",author:"Kyle Simpson",cover:"https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Diving into You Don't Know JS by Kyle Simpson. Mind blown! #bookwiki"},
+  {title:"Eloquent JavaScript",author:"Marijn Haverbeke",cover:"https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Eloquent JavaScript by Marijn Haverbeke – poetry in code. #bookwiki"},
+  {title:"Atomic Habits",author:"James Clear",cover:"https://images.unsplash.com/photo-1544716278-ca5e3f3e9d5e?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Building better habits with Atomic Habits by James Clear. #bookwiki"},
+  {title:"Sapiens",author:"Yuval Noah Harari",cover:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&w=200&h=300&fit=crop", shareText:"Sapiens by Yuval Noah Harari – rethinking human history. #bookwiki"},
+];
+
+function renderBooks(books){
+  const container = $('#bookList');
+  container.innerHTML = books.map((b,i)=>`
+    <div class="book-card">
+      <img src="${b.cover}" alt="${b.title} cover" class="book-cover" loading="lazy">
+      <div class="book-info" style="flex:1;">
+        <h4>${b.title}</h4>
+        <p>${b.author}</p>
+      </div>
+      <button class="share-btn" onclick="shareOnX(${i})">📤 Share on X</button>
+    </div>
+  `).join('');
+  const list = $('#results');
+  list.innerHTML = books.map((b,i)=>`<li><a href="#" data-idx="${i}">📖 ${b.title}</a></li>`).join('');
+}
+
+/*X Share Button*/
+window.shareOnX = function(idx) {
+  const book = mockBooks[idx];
+  const text = encodeURIComponent(book.shareText);
+  const url = `https://twitter.com/intent/tweet?text=${text}`;
+  window.open(url, '_blank', 'width=600,height=400');
+};
+
+/*search bar should work */
+$('#searchInput').addEventListener('input', e=>{
+  const term = e.target.value.toLowerCase();
+  const filtered = mockBooks.filter(b=>b.title.toLowerCase().includes(term) || b.author.toLowerCase().includes(term));
+  renderBooks(filtered);
+  showLibrary();
+});
+
+/*LIBRARY NAV not working */
+function showLibrary(){
+  $('#bookList').style.display = 'block';
+  $('#gameArea').style.display = 'none';
+  renderBooks(mockBooks);
+}
+$('#results').addEventListener('click', e=>{
+  const a = e.target.closest('a');
+  if(!a) return;
+  e.preventDefault();
+  const idx = a.dataset.idx;
+  const book = mockBooks[idx];
+  $('#content').innerHTML = `
+    <div class="card">
+      <h1>${book.title}</h1>
+      <p><strong>by ${book.author}</strong></p>
+      <img src="${book.cover}" style="max-width:100%;border-radius:8px;margin-top:1rem;">
+      <div class="game-btns" style="margin-top:2rem;">
+        <button class="game-btn" onclick="shareOnX(${idx})">📤 Share on X</button>
+        <button class="game-btn" onclick="showLibrary()">📚 Back to Library</button>
+      </div>
+    </div>`;
+});
+
+let ticBoard = Array(9).fill(null);
+let ticPlayer = 'X';
+let ticWinner = null;
+
+function ticReset(){
+  ticBoard = Array(9).fill(null);
+  ticPlayer = 'X';
+  ticWinner = null;
+  $('.tic-status').textContent = 'Your turn (X)';
+  $$('.tic-cell').forEach(c=>{c.textContent='';c.classList.remove('winner');});
+}
+function ticCheck(){
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(let w of wins){
+    if(ticBoard[w[0]] && ticBoard[w[0]]===ticBoard[w[1]] && ticBoard[w[0]]===ticBoard[w[2]]) return ticBoard[w[0]];
+  }
+  return ticBoard.every(v=>v)?'Draw':null;
+}
+function ticBot(){
+  const empty = ticBoard.map((v,i)=>v===null?i:-1).filter(i=>i>=0);
+  if(!empty.length) return;
+  const i = empty[Math.floor(Math.random()*empty.length)];
+  ticBoard[i]='O'; $$('.tic-cell')[i].textContent='O';
+  ticWinner = ticCheck();
+  if(ticWinner){
+    $('.tic-status').textContent = ticWinner==='O'?'🤖 Bot wins!':'It\'s a Draw!';
+    if(ticWinner!=='Draw') $$('.tic-cell')[i].classList.add('winner');
+    return;
+  }
+  ticPlayer='X';
+  $('.tic-status').textContent='Your turn (X)';
+}
+
+const whitePieces = {P:'♙', R:'♖', N:'♘', B:'♗', Q:'♕', K:'♔'};
+const blackPieces = {p:'♟', r:'♜', n:'♞', b:'♝', q:'♛', k:'♚'};
+let chessBoard = [
+  ['r','n','b','q','k','b','n','r'],
+  ['p','p','p','p','p','p','p','p'],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  ['P','P','P','P','P','P','P','P'],
+  ['R','N','B','Q','K','B','N','R']
+];
+let chessSelected = null;
+let chessTurn = 'white';
+
+function chessReset(){
+  chessBoard = [
+    ['r','n','b','q','k','b','n','r'],
+    ['p','p','p','p','p','p','p','p'],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ['P','P','P','P','P','P','P','P'],
+    ['R','N','B','Q','K','B','N','R']
+  ];
+  chessSelected = null;
+  chessTurn = 'white';
+  chessRender();
+  $('.chess-status').textContent='Your turn (White ♔)';
+}
+function chessRender(){
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const cell = $$('.chess-cell')[r*8+c];
+    const piece = chessBoard[r][c];
+    cell.textContent = piece ? (whitePieces[piece] || blackPieces[piece] || piece) : '';
+    cell.classList.toggle('light',(r+c)%2===0);
+    cell.classList.toggle('dark',(r+c)%2!==0);
+    cell.classList.toggle('selected',chessSelected && chessSelected.r===r && chessSelected.c===c);
+  }
+}
+function chessBot(){
+  
+  const moves = [];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p = chessBoard[r][c];
+    if(p && blackPieces[p]){ 
+      if(p === 'p' && r < 7 && !chessBoard[r+1][c]) moves.push({fr:r,fc:c,tr:r+1,tc:c});
+      if(p === 'k' && Math.abs(r-6)<2 && Math.abs(c-4)<2 && !chessBoard[r][c]) moves.push({fr:r,fc:c,tr:r,tc:c}); // Dummy king move
+    }
+  }
+  if(moves.length){
+    const m = moves[Math.floor(Math.random()*moves.length)];
+    chessBoard[m.tr][m.tc] = chessBoard[m.fr][m.fc];
+    chessBoard[m.fr][m.fc] = null;
+    chessRender();
+  }
+  chessTurn = 'white';
+  $('.chess-status').textContent='Your turn (White ♔)';
+}
+
+$$('.play-btn').forEach(btn=>{
+  btn.onclick = e=>{
+    const game = e.target.dataset.game;
+    $('#bookList').style.display='none';
+    $('#gameArea').style.display='block';
+    if(game==='tic'){
+      $('#gameArea').innerHTML = `
+        <h2 style="text-align:center;font-family:var(--font-bold);color:var(--accent);">⭕ Tic Tac Toe vs Bot</h2>
+        <div class="game-board" style="grid-template-columns:repeat(3,1fr);">
+          ${Array(9).fill('<button class="tic-cell"></button>').join('')}
+        </div>
+        <div class="game-status"><span class="tic-status">Your turn (X)</span></div>
+        <div class="game-btns">
+          <button class="game-btn" onclick="ticReset()">🔄 New Game</button>
+          <button class="game-btn" onclick="showLibrary()">📚 Back</button>
+        </div>`;
+      ticReset();
+      $$('.tic-cell').forEach((c,i)=>{
+        c.onclick=()=>{
+          if(ticBoard[i] || ticWinner) return;
+          ticBoard[i]='X'; c.textContent='X';
+          ticWinner=ticCheck();
+          if(ticWinner){
+            $('.tic-status').textContent = ticWinner==='X'?'🎉 You win!':'It\'s a Draw!';
+            if(ticWinner!=='Draw'){
+              const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+              for(let w of wins) if(ticBoard[w[0]]===ticWinner) w.forEach(j=>$$('.tic-cell')[j].classList.add('winner'));
+            }
+            return;
+          }
+          setTimeout(ticBot,600);
+        };
+      });
+    }else if(game==='chess'){
+      $('#gameArea').innerHTML = `
+        <h2 style="text-align:center;font-family:var(--font-bold);color:var(--accent);">♛ Chess vs Bot (You: White)</h2>
+        <div class="chess-board">${Array(64).fill('<div class="chess-cell"></div>').join('')}</div>
+        <div class="game-status"><span class="chess-status">Your turn (White ♔)</span></div>
+        <div class="game-btns">
+          <button class="game-btn" onclick="chessReset()">🔄 New Game</button>
+          <button class="game-btn" onclick="showLibrary()">📚 Back</button>
+        </div>`;
+      chessReset();
+      $$('.chess-cell').forEach((c,i)=>{
+        c.onclick=()=>{
+          const row=Math.floor(i/8), col=i%8;
+          if(chessTurn!=='white') return;
+          if(chessSelected){
+            if(!chessBoard[row][col]){ 
+              chessBoard[row][col]=chessBoard[chessSelected.r][chessSelected.c];
+              chessBoard[chessSelected.r][chessSelected.c]=null;
+              chessSelected=null;
+              chessRender();
+              setTimeout(chessBot,800);
+            }else chessSelected=null;
+          }else if(chessBoard[row][col] && whitePieces[chessBoard[row][col]]){
+            chessSelected={r:row,c:col};
+            chessRender();
+          }
+          chessRender();
+        };
+      });
+    }
+  };
+});
+
+
+function applyTheme(t){
+  document.body.classList.add('theme-ripple'); 
+  setTimeout(()=>document.body.classList.remove('theme-ripple'), 600);
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('book-theme',t);
+  
+  const isLight = ['paper','sepia'].includes(t);
+  document.documentElement.style.setProperty('--text-contrast', isLight ? '#000' : '#f0f0f0');
+}
+function applyCustom(hex){
+  document.body.classList.add('theme-ripple');
+  setTimeout(()=>document.body.classList.remove('theme-ripple'), 600);
+  document.documentElement.style.setProperty('--accent',hex);
+  document.documentElement.style.setProperty('--accent-hover',adjustBrightness(hex,-20));
+
+  const luma = (parseInt(hex.slice(1,3),16)*0.299 + parseInt(hex.slice(3,5),16)*0.587 + parseInt(hex.slice(5,7),16)*0.114) / 255;
+  document.documentElement.style.setProperty('--text-contrast', luma > 0.5 ? '#000' : '#f0f0f0');
+  localStorage.setItem('book-custom-accent',hex);
+}
+function adjustBrightness(hex,p){
+  const n=parseInt(hex.slice(1),16), a=Math.round(2.55*p);
+  const clamp=v=>Math.min(255,Math.max(0,v));
+  const r=clamp((n>>16)+a), g=clamp((n>>8&255)+a), b=clamp((n&255)+a);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+$$('.theme-btn').forEach(b=>b.onclick=()=>{const t=b.dataset.theme||'';applyTheme(t);$$('.theme-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');});
+$('#customColor').oninput=e=>applyCustom(e.target.value);
+const savedTheme=localStorage.getItem('book-theme');
+const savedColor=localStorage.getItem('book-custom-accent');
+if(savedTheme) applyTheme(savedTheme);
+if(savedColor){$('#customColor').value=savedColor;applyCustom(savedColor);}
+if(savedTheme) $(`.theme-btn[data-theme="${savedTheme}"]`)?.classList.add('active');
+
+$('.theme-toggle').onclick=()=>$('#themePanel').classList.toggle('open');
+$('.menu-toggle').onclick=()=>$('#sidebar').classList.toggle('open');
+$('.night-toggle').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const light=['paper','sepia'];
+  const isLight=light.includes(cur);
+  applyTheme(isLight?'':'paper');
+  $$('.theme-btn').forEach(b=>b.classList.remove('active'));
+  if(!isLight) $(`.theme-btn[data-theme="paper"]`)?.classList.add('active');
+};
+document.addEventListener('click',e=>{
+  const sb=$('#sidebar'), m=$('.menu-toggle');
+  if(window.innerWidth<=768 && sb.classList.contains('open')){
+    if(!sb.contains(e.target) && !m.contains(e.target)) sb.classList.remove('open');
+  }
+});
+
+
+renderBooks(mockBooks);
+</script>
+
+
+<script id="extraJS">
+</script>
+</body>
+</html>
